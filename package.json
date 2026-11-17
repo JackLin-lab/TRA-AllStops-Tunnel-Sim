@@ -1,0 +1,14 @@
+{
+  "name": "tra-allstops-tunnel-sim",
+  "version": "1.0.0",
+  "private": true,
+  "description": "臺鐵駕駛模擬器（站站停・隧道版）— by JackLin-lab",
+  "scripts": {
+    "sync": "cap sync android"
+  },
+  "dependencies": {
+    "@capacitor/android": "^6.2.0",
+    "@capacitor/cli": "^6.2.0",
+    "@capacitor/core": "^6.2.0"
+  }
+}

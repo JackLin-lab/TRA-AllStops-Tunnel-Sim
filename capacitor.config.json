@@ -1,0 +1,7 @@
+{
+  "appId": "io.github.jacklinlab.traallstopstunnel",
+  "appName": "臺鐵站站停隧道版",
+  "webDir": "www",
+  "server": { "androidScheme": "https" },
+  "android": { "backgroundColor": "#000000" }
+}

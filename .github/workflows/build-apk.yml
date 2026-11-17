@@ -1,0 +1,68 @@
+# 自動編譯 APK — 臺鐵駕駛模擬器（站站停・隧道版）
+# 倉庫：https://github.com/JackLin-lab/TRA-AllStops-Tunnel-Sim
+name: Build APK
+
+on:
+  push:
+    branches: [ main ]
+    paths-ignore: [ "README.md" ]
+  workflow_dispatch:        # 也可以在 Actions 頁面手動按「Run workflow」
+
+permissions:
+  contents: write           # 讓流程能把 APK 發佈到 Releases
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 取得原始碼
+        uses: actions/checkout@v4
+
+      - name: 安裝 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: 安裝 Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: 安裝 Capacitor 套件
+        run: npm install
+
+      - name: 產生 Android 專案
+        run: npx cap add android
+
+      - name: 設定橫向螢幕與版本號
+        run: |
+          MANIFEST=android/app/src/main/AndroidManifest.xml
+          sed -i 's/<activity/<activity android:screenOrientation="sensorLandscape"/' "$MANIFEST"
+          sed -i "s/versionCode 1/versionCode ${{ github.run_number }}/" android/app/build.gradle
+          sed -i "s/versionName \"1.0\"/versionName \"1.0.${{ github.run_number }}\"/" android/app/build.gradle
+
+      - name: 同步網頁內容
+        run: npx cap sync android
+
+      - name: 編譯 APK（debug，可直接安裝）
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon
+
+      - name: 重新命名 APK
+        run: cp android/app/build/outputs/apk/debug/app-debug.apk TRA-AllStops-Tunnel-Sim.apk
+
+      - name: 上傳 APK（Actions → Artifacts）
+        uses: actions/upload-artifact@v4
+        with:
+          name: TRA-AllStops-Tunnel-Sim-apk
+          path: TRA-AllStops-Tunnel-Sim.apk
+
+      - name: 發佈到 Releases
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: build-${{ github.run_number }}
+          name: 臺鐵站站停隧道版 build ${{ github.run_number }}
+          files: TRA-AllStops-Tunnel-Sim.apk
